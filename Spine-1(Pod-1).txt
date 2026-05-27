@@ -1,0 +1,85 @@
+
+
+hostname Spine-1
+!
+interface Ethernet1
+   description Underlay link to-Leaf-11
+   no switchport
+   ip address 172.1.3.1/24
+!
+interface Ethernet2
+   description Underlay link to-Leaf-12
+   no switchport
+   ip address 172.2.4.1/24
+!
+interface Ethernet3
+   description Underlay link to-Leaf-13
+   no switchport
+   ip address 172.3.5.1/24
+!
+interface Ethernet5
+   no switchport
+   ip address 10.255.1.2/30
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Loopback0
+   ip address 111.111.111.111/32
+!
+interface Management1
+!
+ip routing
+!
+route-map RM_BGP_NHU permit 10
+   set ip next-hop unchanged
+!
+router bgp 65001
+   router-id 111.111.111.111
+   no bgp default ipv4-unicast
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65001
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY route-reflector-client
+   neighbor OVERLAY send-community extended
+   neighbor OVERLAY maximum-routes 12000
+   neighbor 11.11.11.11 peer group OVERLAY
+   neighbor 12.12.12.12 peer group OVERLAY
+   neighbor 13.13.13.13 peer group OVERLAY
+   neighbor 172.30.0.222 remote-as 65222
+   neighbor 172.30.0.222 update-source Loopback0
+   neighbor 172.30.0.222 ebgp-multihop 5
+   !
+   address-family evpn
+      neighbor OVERLAY activate
+      neighbor 172.30.0.222 activate
+      neighbor 172.30.0.222 route-map RM_BGP_NHU out
+!
+router multicast
+   ipv4
+      software-forwarding kernel
+   !
+   ipv6
+      software-forwarding kernel
+!
+router ospf 1
+   router-id 111.111.111.111
+   passive-interface default
+   no passive-interface Ethernet1
+   no passive-interface Ethernet2
+   no passive-interface Ethernet3
+   no passive-interface Ethernet5
+   network 10.255.1.0/30 area 0.0.0.0
+   network 111.111.111.111/32 area 0.0.0.0
+   network 172.1.3.0/24 area 0.0.0.0
+   network 172.2.4.0/24 area 0.0.0.0
+   network 172.3.5.0/24 area 0.0.0.0
+   max-lsa 12000
+!
+end
+
+

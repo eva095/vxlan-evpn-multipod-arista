@@ -79,7 +79,7 @@ L2-связность внутри POD-1
 ![Ping EndPoint-12 to EndPoint-13](images/PingEndPoint12toEndPoint13.jpg)
 
 L2-связность между POD-1 и POD-2 (VLAN 10)
-![EndPoint-12 to EndPoint-21](images/PingEndPoint12toEndPoint21.jpg)  
+![EndPoint-12 to EndPoint-21](images/Ping_EndPoint-12_to_EndPoint-21)  
 ![EndPoint-21 to EndPoint-12](images/Ping_EndPoint-21_to_EndPoint-12.png)  
 ![EndPoint-21 to EndPoint-13](images/Ping_EndPoint-21_to_EndPoint-13.png)
 

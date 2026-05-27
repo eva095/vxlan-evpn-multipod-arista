@@ -1,0 +1,30 @@
+
+
+hostname EndPoint-12
+!
+interface Port-channel3
+ no switchport
+ mac-address 0000.0000.0012
+ ip address 20.0.0.12 255.255.255.0
+!
+interface Port-channel5
+ no switchport
+ mac-address 0000.0000.0012
+ ip address 20.0.0.22 255.255.255.0
+!
+interface GigabitEthernet0/0
+ no switchport
+ no ip address
+ negotiation auto
+ channel-group 5 mode active
+!
+interface GigabitEthernet0/3
+ no switchport
+ no ip address
+ negotiation auto
+ channel-group 3 mode active
+!
+ip route 0.0.0.0 0.0.0.0 10.0.0.1
+ip route 0.0.0.0 0.0.0.0 10.0.0.254
+ip route 0.0.0.0 0.0.0.0 20.0.0.254
+ip route 0.0.0.0 0.0.0.0 20.0.0.1

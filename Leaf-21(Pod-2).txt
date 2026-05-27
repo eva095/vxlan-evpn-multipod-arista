@@ -1,0 +1,89 @@
+
+
+hostname Leaf-21
+!
+vlan 10
+   name VLAN10
+!
+vlan 20
+   name VLAN20
+!
+vrf instance VRF_A_L3_VNI
+!
+interface Ethernet1
+!
+interface Ethernet2
+   switchport access vlan 10
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+   no switchport
+   ip address 172.6.6.21/24
+!
+interface Ethernet6
+!
+interface Ethernet7
+   no switchport
+!
+interface Loopback0
+   ip address 21.21.21.21/32
+!
+interface Vlan10
+   description Clients-10
+   vrf VRF_A_L3_VNI
+   ip address virtual 10.0.0.254/24
+!
+interface Vlan20
+   description Clients-20
+   vrf VRF_A_L3_VNI
+   ip address virtual 20.0.0.254/24
+!
+interface Vxlan1
+   description VTEP
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan flood vtep learned data-plane
+   vxlan vlan 10 vni 10000
+   vxlan vlan 20 vni 20000
+   vxlan vrf VRF_A_L3_VNI vni 1001
+   vxlan flood vtep 11.11.11.11 12.12.12.12 13.13.13.13
+!
+ip routing
+ip routing vrf VRF_A_L3_VNI
+!
+router bgp 65002
+   router-id 21.21.21.21
+   no bgp default ipv4-unicast
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65002
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY send-community extended
+   neighbor OVERLAY maximum-routes 12000
+   neighbor 33.33.33.33 peer group OVERLAY
+   !
+   address-family evpn
+      neighbor OVERLAY activate
+   !
+   vrf VRF_A_L3_VNI
+      rd 21.21.21.21:1001
+      route-target import evpn 65001:1001
+      route-target export evpn 65001:1001
+      router-id 21.21.21.21
+      redistribute connected
+!
+router ospf 1
+   router-id 21.21.21.21
+   passive-interface default
+   no passive-interface Ethernet5
+   no passive-interface Ethernet7
+   network 21.21.21.21/32 area 0.0.0.0
+   network 172.6.6.0/24 area 0.0.0.0
+   max-lsa 12000
+!
+end

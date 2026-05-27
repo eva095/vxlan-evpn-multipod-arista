@@ -1,0 +1,68 @@
+
+
+hostname SuperSpine
+!
+interface Ethernet1
+!
+interface Ethernet2
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+   description link to-Spine-1
+   no switchport
+   ip address 10.255.1.1/30
+!
+interface Ethernet6
+   description link to-Spine-2
+   no switchport
+   ip address 10.255.1.6/30
+!
+interface Ethernet7
+   description link to-Spine-3
+   no switchport
+   ip address 10.255.2.1/30
+!
+interface Loopback0
+   ip address 172.30.0.222/32
+!
+ip routing
+!
+route-map RM_NHU permit 10
+   set ip next-hop unchanged
+!
+router bgp 65222
+   router-id 172.30.0.222
+   maximum-paths 4
+   neighbor SPINES peer group
+   neighbor SPINES update-source Loopback0
+   neighbor SPINES ebgp-multihop 5
+   neighbor SPINES send-community extended
+   neighbor 33.33.33.33 peer group SPINES
+   neighbor 33.33.33.33 remote-as 65002
+   neighbor 111.111.111.111 peer group SPINES
+   neighbor 111.111.111.111 remote-as 65001
+   neighbor 222.222.222.222 peer group SPINES
+   neighbor 222.222.222.222 remote-as 65001
+   !
+   address-family evpn
+      neighbor SPINES activate
+      neighbor SPINES route-map RM_NHU out
+!
+router ospf 1
+   router-id 172.30.0.222
+   passive-interface default
+   no passive-interface Ethernet1
+   no passive-interface Ethernet2
+   no passive-interface Ethernet5
+   no passive-interface Ethernet6
+   no passive-interface Ethernet7
+   network 10.255.1.0/30 area 0.0.0.0
+   network 10.255.1.4/30 area 0.0.0.0
+   network 10.255.2.0/30 area 0.0.0.0
+   network 172.30.0.222/32 area 0.0.0.0
+   max-lsa 12000
+!
+end

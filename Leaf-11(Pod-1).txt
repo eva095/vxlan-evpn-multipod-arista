@@ -1,0 +1,142 @@
+hostname Leaf-11
+!
+spanning-tree mode mstp
+no spanning-tree vlan-id 4094
+!
+vlan 10
+   name Vlan10
+!
+vlan 20
+   name vlan20
+!
+vlan 4094
+   name MLAG_PEER
+   trunk group MLAGPEER
+!
+vrf instance VRF_A_L3_VNI
+!
+interface Port-Channel4
+   switchport access vlan 10
+   mlag 4
+!
+interface Port-Channel5
+   switchport access vlan 20
+   mlag 5
+!
+interface Port-Channel100
+   description MLAG Peer-link
+   switchport mode trunk
+   switchport trunk group MLAGPEER
+   no spanning-tree portfast auto
+   spanning-tree portfast network
+!
+interface Ethernet1
+   description Underlay link to Spine-1
+   no switchport
+   ip address 172.1.3.11/24
+   ip ospf area 0.0.0.0
+!
+interface Ethernet2
+   description Underlay link to Spine-2
+   no switchport
+   ip address 172.1.4.11/24
+   ip ospf area 0.0.0.0
+!
+interface Ethernet3
+   switchport access vlan 10
+   channel-group 4 mode active
+!
+interface Ethernet5
+   description MLAG Peer-link to Leaf-12
+   channel-group 100 mode active
+!
+interface Ethernet6
+   description MLAG Peer-link to Leaf-12
+   channel-group 100 mode active
+!
+interface Ethernet7
+   switchport access vlan 20
+   channel-group 5 mode active
+!
+interface Loopback0
+   description Underlay Router-ID
+   ip address 11.11.11.11/32
+   ip ospf area 0.0.0.0
+!
+interface Loopback1
+   ip address 100.100.100.100/32
+!
+interface Management1
+   ip address 192.168.0.11/24
+!
+interface Vlan10
+   ip address 10.0.0.254/24
+   ip virtual-router address 10.0.0.1
+!
+interface Vlan20
+   ip address virtual 20.0.0.254/24
+!
+interface Vlan4094
+   description MLAG Peer-link SVI
+   no autostate
+   ip address 192.168.1.11/29
+!
+interface Vxlan1
+   vxlan source-interface Loopback0
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 10000
+   vxlan flood vtep 13.13.13.13 21.21.21.21
+!
+ip virtual-router mac-address 00:01:00:01:00:01
+!
+ip routing
+ip routing vrf VRF_A_L3_VNI
+!
+mlag configuration
+   domain-id 10
+   local-interface Vlan4094
+   peer-address 192.168.1.12
+   peer-address heartbeat 192.168.0.12 vrf management
+   peer-link Port-Channel100
+!
+router bgp 65001
+   router-id 11.11.11.11
+   no bgp default ipv4-unicast
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65001
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY send-community extended
+   neighbor OVERLAY maximum-routes 12000
+   neighbor 111.111.111.111 peer group OVERLAY
+   neighbor 222.222.222.222 peer group OVERLAY
+   !
+   address-family evpn
+      neighbor OVERLAY activate
+   !
+   vrf VRF_A_L3_VNI
+      rd 11.11.11.11:1001
+      route-target import evpn 65001:1001
+      route-target export evpn 65001:1001
+      router-id 11.11.11.11
+      redistribute connected
+!
+router multicast
+   ipv4
+      software-forwarding kernel
+   !
+   ipv6
+      software-forwarding kernel
+!
+router ospf 1
+   router-id 11.11.11.11
+   passive-interface default
+   no passive-interface Ethernet1
+   no passive-interface Ethernet2
+   network 172.1.3.0/24 area 0.0.0.0
+   network 172.1.4.0/24 area 0.0.0.0
+   max-lsa 12000
+!
+end

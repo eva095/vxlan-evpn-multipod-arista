@@ -1,0 +1,63 @@
+
+
+hostname Spine-3
+!
+interface Ethernet1
+!
+interface Ethernet2
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+   no switchport
+   ip address 172.6.6.3/24
+!
+interface Ethernet6
+!
+interface Ethernet7
+   no switchport
+   ip address 10.255.2.2/30
+!
+interface Loopback0
+   ip address 33.33.33.33/32
+!
+ip routing
+!
+route-map RM_BGP_NHU permit 10
+   set ip next-hop unchanged
+!
+router bgp 65002
+   router-id 33.33.33.33
+   no bgp default ipv4-unicast
+   distance bgp 20 200 200
+   maximum-paths 2 ecmp 2
+   neighbor OVERLAY peer group
+   neighbor OVERLAY remote-as 65002
+   neighbor OVERLAY update-source Loopback0
+   neighbor OVERLAY bfd
+   neighbor OVERLAY route-reflector-client
+   neighbor OVERLAY send-community extended
+   neighbor OVERLAY maximum-routes 12000
+   neighbor 21.21.21.21 peer group OVERLAY
+   neighbor 172.30.0.222 remote-as 65222
+   neighbor 172.30.0.222 update-source Loopback0
+   neighbor 172.30.0.222 ebgp-multihop 5
+   !
+   address-family evpn
+      neighbor OVERLAY activate
+      neighbor 172.30.0.222 activate
+      neighbor 172.30.0.222 route-map RM_BGP_NHU out
+!
+router ospf 1
+   router-id 33.33.33.33
+   passive-interface default
+   no passive-interface Ethernet5
+   no passive-interface Ethernet7
+   network 10.255.2.0/30 area 0.0.0.0
+   network 33.33.33.33/32 area 0.0.0.0
+   network 172.6.6.0/24 area 0.0.0.0
+   max-lsa 12000
+!
+end
