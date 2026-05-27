@@ -76,10 +76,11 @@ route-map RM_BGP_NHU permit 10
 Проверка работоспособности
 
 L2-связность внутри POD-1
-![Ping EndPoint-12 to EndPoint-13](images/PingEndPoint12toEndPoint13.jpg)
+![Ping EndPoint-12 to EndPoint-13](images/Ping_EndPoint-12_to_EndPoint-13.png)
 
 L2-связность между POD-1 и POD-2 (VLAN 10)
-![EndPoint-12 to EndPoint-21](images/Ping_EndPoint-12_to_EndPoint-21)  
+![EndPoint-12 to EndPoint-21](images/Ping_EndPoint-12_to_EndPoint-21.png)
+![EndPoint-13 to EndPoint-21](images/Ping_EndPoint-13_to_EndPoint-21.png)
 ![EndPoint-21 to EndPoint-12](images/Ping_EndPoint-21_to_EndPoint-12.png)  
 ![EndPoint-21 to EndPoint-13](images/Ping_EndPoint-21_to_EndPoint-13.png)
 
